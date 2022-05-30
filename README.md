@@ -148,3 +148,5 @@
 ## 参考文档
 1. [工程-study_module](https://github.com/zouchanglin/study_module)
 2. [视频-Android组件化实战](https://www.bilibili.com/video/BV1Ar4y1A7kh?spm_id_from=333.788.top_right_bar_window_custom_collection.content.click)
+3. [Android官方-配置 build 变体 ](https://developer.android.com/studio/build/build-variants#sourcesets)
+4. [Gradle官方-配置sourceSets](https://docs.gradle.org/current/userguide/building_java_projects.html#sec:custom_java_source_set_paths)

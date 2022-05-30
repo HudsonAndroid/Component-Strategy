@@ -20,6 +20,7 @@ class AppSplashActivity : Activity() {
         }, 500)
     }
 
+    // todo 不能直接依赖其他业务组件的类
     fun launchMainLogicPage(){
         finish()
         startActivity( Intent(this, AppMainActivity::class.java))
