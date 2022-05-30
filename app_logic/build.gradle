@@ -36,6 +36,20 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
+
+    sourceSets {
+        main{
+            if(flags.isRelease){
+                manifest.srcFile 'src/main/AndroidManifest.xml'
+                // 打包时要排除掉debug目录
+                java {
+                    exclude '**/debug/**'
+                }
+            }else{
+                manifest.srcFile 'src/main/debug/AndroidManifest.xml'
+            }
+        }
+    }
 }
 
 dependencies {
