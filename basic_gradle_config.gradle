@@ -1,0 +1,13 @@
+// 基础gradle配置文件，用于各个组件统一使用
+
+// 注：ext只需要在组件的project层级下配置，内部的子module的build.gradle就能直接引用，这与ext的特性有关，参见Gradle官方文档
+ext {
+    // 1.版本配置信息(map结构，groovy语法，可以直接通过versions.android访问)
+    versions = [
+        android: [
+            compileSdk: 31,
+            minSdk: 21,
+            targetSdk: 31
+        ]
+    ]
+}

@@ -5,6 +5,9 @@ plugins {
     id 'org.jetbrains.kotlin.android' version '1.6.10' apply false
 }
 
+// 引入公共Gradle配置
+apply from: 'basic_gradle_config.gradle'
+
 task clean(type: Delete) {
     delete rootProject.buildDir
 }

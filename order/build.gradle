@@ -4,12 +4,12 @@ plugins {
 }
 
 android {
-    compileSdk 31
+    compileSdk versions.android.compileSdk
 
     defaultConfig {
         applicationId "com.hudson.order"
-        minSdk 21
-        targetSdk 31
+        minSdk versions.android.minSdk
+        targetSdk versions.android.targetSdk
         versionCode 1
         versionName "1.0"
 
