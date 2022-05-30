@@ -15,3 +15,5 @@ dependencyResolutionManagement {
 rootProject.name = "Component-Strategy"
 include ':app'
 include ':common'
+include ':order'
+include ':product'
