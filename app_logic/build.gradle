@@ -1,13 +1,20 @@
 plugins {
-    id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
+}
+
+if(flags.isRelease){
+    apply plugin: 'com.android.library'
+}else{
+    apply plugin: 'com.android.application'
 }
 
 android {
     compileSdk versions.android.compileSdk
 
     defaultConfig {
-        applicationId "com.hudson.component"
+        if(!flags.isRelease){
+            applicationId "com.hudson.logic"
+        }
         minSdk versions.android.minSdk
         targetSdk versions.android.targetSdk
         versionCode 1
@@ -32,6 +39,7 @@ android {
 }
 
 dependencies {
+
     implementation 'androidx.core:core-ktx:1.7.0'
     implementation 'androidx.appcompat:appcompat:1.3.0'
     implementation 'com.google.android.material:material:1.4.0'
@@ -39,7 +47,4 @@ dependencies {
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
-
-    // 依赖业务组件
-    implementation project(":app_logic")
 }

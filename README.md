@@ -68,6 +68,8 @@
 - 1.示例工程的Gradle版本是7.4.2，Gradle新增了plugins{}方式引入Gradle插件，但是内部不支持其他声明，包括If-else。 因此需要使用旧版的引入方式，即apply plugin
 - 2.plugins的声明必须优先于其他声明。 例如把apply plugin段放到plugins前面将会报错
 
+#### 2）控制Manifest中启动activity的状态
+当业务组件被当成
 
 ## 参考文档
 1. [工程-study_module](https://github.com/zouchanglin/study_module)
