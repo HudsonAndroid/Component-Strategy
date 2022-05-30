@@ -6,7 +6,7 @@
 - 功能业务重用
 - 团队并行开发，效率提升
 
-![组件化示例图](组件化示例图.png)
+![组件化示例图](resources/组件化示例图.png)
 
 ## 1.组件化的目标
 - 1.各个组件无耦合关系，相互独立，可拔插
@@ -71,7 +71,79 @@
 - 2.plugins的声明必须优先于其他声明。 例如把apply plugin段放到plugins前面将会报错
 
 #### 2）控制Manifest中启动activity的状态
-当业务组件被当成
+当业务组件被当成组件接入壳工程时，由于本身可以被配置成应用，所以manifest中的启动activity是有配置的，这样导致的结果是我们安装app壳工程时，**将会在桌面上产生多个启动图标**。
+
+为了解决这个问题，manifest文件需要根据不同环境因素而有不同的表现形式。
+
+为此我们可以借助Gradle的sourceSet功能在非集成状态下，指定另一份manifest源码文件。
+
+	android{
+		sourceSets {
+	        main{
+	            if(flags.isRelease){
+	                manifest.srcFile 'src/main/AndroidManifest.xml'
+	                // 打包时要排除掉dev目录
+	                java {
+	                    exclude 'src/main/dev/'
+	                }
+	            }else{
+	                manifest.srcFile 'src/main/dev/AndroidManifest.xml'
+	            }
+	        }
+	    }
+	}
+
+#### 3）[控制部分仅非集成情况下可见的页面](app_logic/build.gradle)
+**由于组件化特性，本身部分组件仅有一些自身的主体逻辑的情况下，是无法走完自我测试验证的GUI整体流程的**。 
+
+例如分享组件，本身实现的功能就是分享，那么GUI测试的话，必然需要一个页面承载主动调起分享组件的能力，这个时候就需要一个页面，且携带一个按钮，按钮点击后，带上分享相关的参数，调用分享组件实际主体业务，以完成功能测试，而**不是得依赖其他的应用功能来完成自测**.
+
+这种情况下，我们可以手动在非集成情况下增加源码、资源的搜索路径，然后这些页面仅在非集成状态下可以被正常调用。
+
+	   sourceSets {
+	        main{
+	            if(flags.isRelease){
+	                manifest.srcFile 'src/main/AndroidManifest.xml'
+	                // 打包时要排除掉dev目录
+	                java {
+	                    exclude 'src/main/dev/'
+	                }
+	            }else{
+	                manifest.srcFile 'src/main/dev/AndroidManifest.xml'
+	
+	                // 增加源码搜索路径 src/main/dev目录
+	                java{
+	                    srcDir 'src/main/dev'
+	                }
+	
+	                // 参考 https://developer.android.com/studio/build/build-variants#sourcesets
+	                res.srcDirs = ['src/main/res/', 'src/main/dev/res/']
+	            }
+	        }
+	    }
+
+这样，在非集成模式下，代码源将会增加dev目录下的内容，包括资源文件（这里是layout布局文件）
+
+![仅非集成模式下测试视图](resources/仅非集成模式下测试视图.jpg)
+
+我们在主体代码中增加GUI测试的预留入口(仅示例)
+
+![非集成模式下GUI测试预留入口](resources/非集成模式下GUI测试预留入口.jpg)
+
+这样单独运行业务组件（此时为应用程序状态），我们可以进入到dev中定义的页面DebugPageActivity中去。
+
+而当我们切换成组件状态（即集成模式）下，DebugPageActivity是没法被找到的，即预留入口本身无意义。
+
+![集成模式下结构](resources/集成模式下结构.jpg)
+
+#### 总结
+这样能保证，
+
+**在集成模式下，组件正常以子功能/子模块的形式被引入到壳工程中**；
+
+**非集成模式下，组件以应用的身份且可以运用仅开发时期的页面完成相关的GUI测试验证。**
+
+
 
 ## 参考文档
 1. [工程-study_module](https://github.com/zouchanglin/study_module)

@@ -10,6 +10,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.ComponentStrategy">
         <activity
+            android:name=".DebugPageActivity"
+            android:exported="false" />
+        <activity
             android:name=".AppMainActivity"
             android:exported="true">
             <intent-filter>
