@@ -10,4 +10,9 @@ ext {
             targetSdk: 31
         ]
     ]
+
+    flags = [
+        // 控制业务组件是否集成，如果是false，业务组件将作为应用程序方式运行，即构建产物是apk
+        isRelease: true
+    ]
 }

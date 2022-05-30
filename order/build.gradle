@@ -1,13 +1,30 @@
+
 plugins {
-    id 'com.android.application'
+    // 不能这样使用
+//    if(flags.isRelease){
+//        id 'com.android.application'
+//    }else{
+//        id 'com.android.library'
+//    }
     id 'org.jetbrains.kotlin.android'
 }
+
+// 必须按照旧版Gradle的方式
+if(flags.isRelease){
+    apply plugin: 'com.android.library' // artifacts: aar
+}else{
+    apply plugin: 'com.android.application' // artifacts: apk
+}
+
+
 
 android {
     compileSdk versions.android.compileSdk
 
     defaultConfig {
-        applicationId "com.hudson.order"
+        if(!flags.isRelease){
+            applicationId "com.hudson.order"
+        }
         minSdk versions.android.minSdk
         targetSdk versions.android.targetSdk
         versionCode 1
