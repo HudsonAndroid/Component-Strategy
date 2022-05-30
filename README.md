@@ -12,7 +12,7 @@
 - 1.各个组件无耦合关系，相互独立，可拔插
 - 2.组件可以单独测试验证或独立运行
 
-组件构成上，由最上层的app壳 + 本身app主功能业务组件 + 常规业务组件（和基础业务组件） + 基础功能组件构成。
+组件构成上，由**最上层的app壳 + 本身app主功能业务组件 + 常规业务组件（和基础业务组件） + 基础功能组件**构成。
 
 本身app主功能业务组件跟app本身功能关联度最大，与常规业务组件不同，能够被复用于其他应用的可能性更低。
 
@@ -23,12 +23,12 @@
 ### 1.2 业务组件的可测试性
 为了确保业务组件本身可以单独进行除了基础的单元测试之外，还能进行GUI测试，因此应该确保业务组件本身的可应用化的特性。
 
-因此需要手动控制部分代码文件，以确保在组件自我测试验证时保持应用的主体性，而在作为组件引入其他上传业务组件中时作为组件模块提供功能。
+因此需要手动控制部分代码文件，**以确保在组件自我测试验证时保持应用的主体性，而在作为组件引入其他上传业务组件中时作为组件模块提供功能**。
 
 借助于Gradle的sourceSets和android的application和library特性来实现这一点。
 
 #### 1）控制组件和应用的特性来回切换
-继续在[公共Gradle配置文件]((basic_gradle_config.gradle))中新增是否集成的标记flag，通过该标记控制是组件还是应用。  
+继续在[公共Gradle配置文件](basic_gradle_config.gradle)中新增是否集成的标记flag，通过该标记控制是组件还是应用。  
 
 **注：为了考虑到组件自身的独立控制性，可以考虑将标记下沉给组件开发方控制，此处为了多个模块统一控制，使用公共Gradle配置文件。**
 
@@ -38,6 +38,7 @@
     ]
 
 组件中的配置：
+
 	// 1) 切换application和library
 	plugins {
 	    // 不能这样使用
@@ -144,7 +145,49 @@
 **非集成模式下，组件以应用的身份且可以运用仅开发时期的页面完成相关的GUI测试验证。**
 
 
+## 2.路由实现
+经过上面组件拆分后，各个组件之间的页面跳转还是依赖了Activity的startActivity方法，这样**导致跳转组件涉及的双方会有直接的类依赖关系**，未完全解耦。
 
+因此有必要提供一个路由工具，将各个业务组件整合起来，解除各自的依赖关系。
+
+这个首先想到的就是[ARouter框架](https://github.com/alibaba/ARouter)
+
+我们手动来实现类似ARouter的功能。
+### 2.1 APT((Annotation Processing Tool))
+利用注解动态动态生成代码已经非常常见，像ButterKnife、Dagger、EventBus、ARouter等都是借助了APT注解处理器来完成的。
+
+其中[EventBus](https://github.com/greenrobot/EventBus/blob/master/EventBusAnnotationProcessor/src/org/greenrobot/eventbus/annotationprocessor/EventBusAnnotationProcessor.java)是没有借助任务第三方代码生成工具，像写字符串一样完成的java文件的动态生成。
+
+一般情况会借助[JavaPoet](https://github.com/square/javapoet)来完成java文件的动态生成。
+
+### 2.2 自定义注解和注解处理器
+#### 1)新建自定义注解[HRouter](HRouter-Annotation)
+
+	@Target(AnnotationTarget.CLASS) // 作用在类上
+	@Retention(AnnotationRetention.SOURCE) // 编译期生效
+	annotation class HRouter(
+	    val path: String,
+	    val group: String = "" // 一般指定为组件名
+	)
+#### 2）新建自定义注解处理器[HRouter-Annotation-Processor](HRouter-Annotation-Processor)
+
+	@AutoService(Processor::class)
+	@SupportedAnnotationTypes("com.hudson.hrouter.annotation.HRouter") // 需要处理的注解类
+	@SupportedSourceVersion(SourceVersion.RELEASE_8)
+	class HRouterAnnotationProcessor: AbstractProcessor() {
+		// ...
+	}
+
+注意：
+
+- 1.需要依赖HRouter注解module
+- 2.kotlin中要使用auto-service的话要借助kapt，而不是annotation-processor
+- 3.注解处理器一旦make project一次之后，后面make project不会触发逻辑处理，需要先build clean之后重新make project
+
+#### 3）依赖关系梳理
+注解HRouter可能在各个业务组件的各个页面都要使用，因此将HRouter注解的依赖通过api方式放入**基础功能组件common**中；
+
+而注解处理器由于kapt或者annotationProcessor只对当前module有效且不向上传递依赖，因此注解处理器需要在各个需要配置路由的业务组件上增加依赖。
 ## 参考文档
 1. [工程-study_module](https://github.com/zouchanglin/study_module)
 2. [视频-Android组件化实战](https://www.bilibili.com/video/BV1Ar4y1A7kh?spm_id_from=333.788.top_right_bar_window_custom_collection.content.click)

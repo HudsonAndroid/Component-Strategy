@@ -1,0 +1,30 @@
+plugins {
+    id 'java-library'
+    id 'org.jetbrains.kotlin.jvm'
+    id 'kotlin-kapt'
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', includes: ['*.jar'])
+
+    // auto-service会帮我们在build/resources中生成META-INF对应文件
+    kapt 'com.google.auto.service:auto-service:1.0-rc6'
+    // 主要是引入AutoService注解
+    implementation 'com.google.auto.service:auto-service:1.0-rc6'
+
+    // 帮助我们通过面向对象方式来生成Java代码[JavaPoet]
+    implementation 'com.squareup:javapoet:1.11.1'
+
+    // 依赖于注解
+    implementation project(':HRouter-Annotation')
+}
+
+// 控制台中文设置UTF-8
+tasks.withType(JavaCompile){
+    options.encoding = "UTF-8"
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}

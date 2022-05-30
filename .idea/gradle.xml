@@ -12,6 +12,8 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/HRouter-Annotation" />
+            <option value="$PROJECT_DIR$/HRouter-Annotation-Processor" />
             <option value="$PROJECT_DIR$/app" />
             <option value="$PROJECT_DIR$/app_logic" />
             <option value="$PROJECT_DIR$/common" />
