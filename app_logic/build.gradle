@@ -22,6 +22,16 @@ android {
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        // 给内部的注解处理器传递参数
+        javaCompileOptions {
+            annotationProcessorOptions{
+                arguments = [
+                    HRouterGroup: project.name,// 路由分组直接指定为模块名。 注意不要直接使用name，会被覆盖为main，要引用project.name
+                    RouterPkg: hroute_info.packageName // 路由代码生成的包名
+                ]
+            }
+        }
     }
 
     buildTypes {
@@ -75,4 +85,5 @@ dependencies {
 
     // 依赖基础功能组件
     implementation project(":common")
+    implementation project(":HRouter-Api")
 }

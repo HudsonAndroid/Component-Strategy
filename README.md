@@ -1,4 +1,4 @@
-# Component-Strategy
+# Component-Strategy  组件化方案
 组件化方案优点：
 
 - 充分体现高内聚，低耦合特性，益于后续维护升级
@@ -153,7 +153,7 @@
 这个首先想到的就是[ARouter框架](https://github.com/alibaba/ARouter)
 
 我们手动来实现类似ARouter的功能。
-### 2.1 APT((Annotation Processing Tool))
+### 2.1 APT(Annotation Processing Tool)
 利用注解动态动态生成代码已经非常常见，像ButterKnife、Dagger、EventBus、ARouter等都是借助了APT注解处理器来完成的。
 
 其中[EventBus](https://github.com/greenrobot/EventBus/blob/master/EventBusAnnotationProcessor/src/org/greenrobot/eventbus/annotationprocessor/EventBusAnnotationProcessor.java)是没有借助任务第三方代码生成工具，像写字符串一样完成的java文件的动态生成。
@@ -188,8 +188,104 @@
 注解HRouter可能在各个业务组件的各个页面都要使用，因此将HRouter注解的依赖通过api方式放入**基础功能组件common**中；
 
 而注解处理器由于kapt或者annotationProcessor只对当前module有效且不向上传递依赖，因此注解处理器需要在各个需要配置路由的业务组件上增加依赖。
+
+#### 4）附录
+编译器给注解处理器传递参数。
+
+大部分情况下，一个组件的页面都同属于一个路由组，不同组件处于不同的路由组，因此可以给路由组直接传递模块名或者模块标识。  
+
+我们可以直接给注解处理器在处理模块时传递模块名或模块标识，用于统一归纳路由组。
+
+		// 给内部的注解处理器传递参数
+        javaCompileOptions {
+            annotationProcessorOptions{
+                arguments = [
+                    HRouterGroup: name,// 路由分组直接指定为模块名
+                    RouterPkg: hroute_info.packageName // 路由代码生成的包名
+                ]
+            }
+        }
+
+![给注解处理器传递参数1](resources/给注解处理器传递参数1.jpg)
+
+![给注解处理器传递参数2](resources/给注解处理器传递参数2.jpg)
+
+
+### 2.3 路由参数管理
+路由过程免不了需要传递参数信息，因此需要一套路由参数管理机制。
+
+我们设想的路由发起端是这样的：
+
+	RouterManager.getInstance()
+	    .build("/order/OrderMainActivity")
+	    .withString("name", "张三")
+	    .withString("age", 20)
+	    .navigation(this);
+
+而路由的目标端是这样的：
+
+	@HRouter(path = "/logic/main", group = "/logic")
+	class AppMainActivity : AppCompatActivity() {
+	
+	    @Parameter
+	    var greet: String? = null
+	    
+	
+	    override fun onCreate(savedInstanceState: Bundle?) {
+	        super.onCreate(savedInstanceState)
+	        setContentView(R.layout.activity_main)
+	        
+	        ParameterManager.bindParameter(this)
+	    }
+	}
+
+可以看出，**目标端的逻辑非常像依赖注入框架Dagger或者Hilt的操作**。 没错，这里就是我们手动帮助AppMainActivity完成对greet变量的初始化，即外部注入变量值。
+
+**因此被注解的变量必须是开放且可被修改的**。 所以参数目标的代码所要实现的就是一个依赖注入的过程。
+
+#### 1) 注入器类的动态生成
+为了统一管理所有页面的注入器类，因此需要定义一个[注入器的接口类型](HRouter-Api/src/main/java/com/hudson/hrouter_api/param/ParameterInjector.kt)
+
+然后由[路由参数注解处理器](HRouter-Annotation-Processor/src/main/java/com/hudson/hrouter_annotation_processor/ParameterAnnotationProcessor.kt)解析[路由参数注解](HRouter-Annotation/src/main/java/com/hudson/hrouter/annotation/Parameter.kt)信息，动态生成一个页面对应的注入类。
+
+![路由注入器生成过程](resources/路由注入器生成过程.png)
+
+**注：kotlin中定义变量后，默认是public的，但本质是携带有getter和setter的变量，如果在java中访问kotlin的该变量是不能直接通过参数获取的，否则将会报如下错误：**
+
+	// 被注入的类
+	@HRouter(path = "/logic/main", group = "/logic")
+	class AppMainActivity : AppCompatActivity() {
+	
+	    @Parameter
+	    var greet: String? = null
+	}
+
+	// 注入器
+	public class AppMainActivity_ParameterInjector implements ParameterInjector {
+	  @Override
+	  public void inject(Object targetObject) {
+	    AppMainActivity t = (AppMainActivity)targetObject;
+	    t.greet = t.getIntent().getStringExtra("greet"); // 出错
+	  }
+	}
+
+
+	...\Component-Strategy\app_logic\build\generated\source\kapt\debug\com\hudson\logic\AppMainActivity_ParameterInjector.java:11: 
+	
+	错误: greet 在 AppMainActivity 中是 private 访问控制
+    t.greet = t.getIntent().getStringExtra("greet");
+
+解决方案：
+
+- 1.参考[Hilt依赖注入框架](https://developer.android.com/training/dependency-injection/hilt-android#android-classes)的方式，将变量设置为lateinit var
+- 2. 给字段增加 @JvmField 注解，这样就能在java中直接访问
+- 3.类注入器采用kotlin实现，即利用[KotlinPoet](https://github.com/square/kotlinpoet)完成
+
+
+
 ## 参考文档
 1. [工程-study_module](https://github.com/zouchanglin/study_module)
 2. [视频-Android组件化实战](https://www.bilibili.com/video/BV1Ar4y1A7kh?spm_id_from=333.788.top_right_bar_window_custom_collection.content.click)
 3. [Android官方-配置 build 变体 ](https://developer.android.com/studio/build/build-variants#sourcesets)
 4. [Gradle官方-配置sourceSets](https://docs.gradle.org/current/userguide/building_java_projects.html#sec:custom_java_source_set_paths)
+5. [Android官方-使用Hilt实现依赖注入](https://developer.android.com/training/dependency-injection/hilt-android#android-classes)

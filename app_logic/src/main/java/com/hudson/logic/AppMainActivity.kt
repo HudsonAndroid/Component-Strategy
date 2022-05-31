@@ -5,13 +5,30 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Button
 import com.hudson.hrouter.annotation.HRouter
+import com.hudson.hrouter.annotation.Parameter
+import com.hudson.hrouter_api.param.ParameterManager
 
 @HRouter(path = "/logic/main", group = "/logic")
 class AppMainActivity : AppCompatActivity() {
+
+    @Parameter
+    @JvmField var greet: String? = null
+
+    @Parameter
+    @JvmField
+    var count: Int? = null
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+
+
+        ParameterManager.bindParameter(this)
+
         guiTestEntry()
+
     }
 
     private fun guiTestEntry(){

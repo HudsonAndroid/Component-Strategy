@@ -5,8 +5,6 @@ plugins {
 }
 
 dependencies {
-    implementation fileTree(dir: 'libs', includes: ['*.jar'])
-
     // auto-service会帮我们在build/resources中生成META-INF对应文件
     kapt 'com.google.auto.service:auto-service:1.0-rc6'
     // 主要是引入AutoService注解

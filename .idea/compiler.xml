@@ -5,6 +5,7 @@
       <module name="Component-Strategy.app" target="11" />
       <module name="Component-Strategy.app_logic" target="11" />
       <module name="Component-Strategy.common" target="11" />
+      <module name="Component-Strategy.HRouter-Api" target="11" />
       <module name="Component-Strategy.order" target="11" />
       <module name="Component-Strategy.product" target="11" />
     </bytecodeTargetLevel>
