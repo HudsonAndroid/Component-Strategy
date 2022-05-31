@@ -81,9 +81,10 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
 
+    // 依赖路由组件
     kapt project(":HRouter-Annotation-Processor")
+    implementation project(":HRouter-Api")
 
     // 依赖基础功能组件
     implementation project(":common")
-    implementation project(":HRouter-Api")
 }

@@ -6,7 +6,7 @@ import android.os.Bundle
 import android.widget.Button
 import com.hudson.hrouter.annotation.HRouter
 import com.hudson.hrouter.annotation.Parameter
-import com.hudson.hrouter_api.param.ParameterManager
+import com.hudson.hrouter_api.param.ParameterInjectorManager
 
 @HRouter(path = "/logic/main", group = "/logic")
 class AppMainActivity : AppCompatActivity() {
@@ -25,7 +25,7 @@ class AppMainActivity : AppCompatActivity() {
 
 
 
-        ParameterManager.bindParameter(this)
+        ParameterInjectorManager.inject(this)
 
         guiTestEntry()
 

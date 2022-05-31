@@ -66,6 +66,7 @@ class ParameterAnnotationProcessor: AbstractProcessor() {
                 }
             }
             generateDICodeFile()
+            return true
         }
         return false
     }

@@ -235,7 +235,7 @@
 	        super.onCreate(savedInstanceState)
 	        setContentView(R.layout.activity_main)
 	        
-	        ParameterManager.bindParameter(this)
+	        ParameterInjectorManager.inject(this)
 	    }
 	}
 
@@ -280,7 +280,16 @@
 - 1.参考[Hilt依赖注入框架](https://developer.android.com/training/dependency-injection/hilt-android#android-classes)的方式，将变量设置为lateinit var
 - 2. 给字段增加 @JvmField 注解，这样就能在java中直接访问
 - 3.类注入器采用kotlin实现，即利用[KotlinPoet](https://github.com/square/kotlinpoet)完成
+#### 2) 注入器的统一管理
+与Hilt/Dagger类似，注入器需要通过统一的管理，相当于维护一个**注入器存储中心**。
 
+与DNS解析过程类似，每当外界需要注入的时候，外界需要传递一个路由页面类型（解析前的域名）；
+
+注入器存储中心拿到该信息后，去存储中查询（DNS服务器查找是否有对应IP），找到后返回给调用者；
+
+调用者拿到结果继续完成注入过程。
+
+因此注入器的管理中心可以设计成一个key-value的map存储中心。 另外考虑到App页面较多情况下，可能没必要缓存过多层级可以将map结构设计为LruCache缓存。
 
 
 ## 参考文档
