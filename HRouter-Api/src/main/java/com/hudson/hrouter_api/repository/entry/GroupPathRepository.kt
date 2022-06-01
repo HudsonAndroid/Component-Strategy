@@ -1,4 +1,4 @@
-package com.hudson.hrouter_api
+package com.hudson.hrouter_api.repository.entry
 
 import com.hudson.hrouter.annotation.bean.RouteInfo
 

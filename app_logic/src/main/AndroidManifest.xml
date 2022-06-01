@@ -3,7 +3,10 @@
     package="com.hudson.logic">
 
     <application>
-        <activity android:name=".AppMainActivity"/>
+        <activity
+            android:name=".SettingsActivity"
+            android:exported="false" />
+        <activity android:name=".AppMainActivity" />
     </application>
 
 </manifest>

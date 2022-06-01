@@ -1,4 +1,4 @@
-package com.hudson.hrouter_api
+package com.hudson.hrouter_api.repository.entry
 
 /**
  * 组件路由组Group仓库

@@ -99,7 +99,8 @@ class RepositoryFileGenerator(
                 "HRouter: 组件=${componentName}, 路由组=$group， Group路由表类=$generatePkg.$finalClassName"
             )
 
-            val superInterfaceType = elementUtils?.getTypeElement("com.hudson.hrouter_api.GroupPathRepository")
+            val superInterfaceType = elementUtils?.getTypeElement(
+                "com.hudson.hrouter_api.repository.entry.GroupPathRepository")
             JavaFile.builder(
                 generatePkg,
                 TypeSpec.classBuilder(finalClassName)
@@ -159,7 +160,8 @@ class RepositoryFileGenerator(
             ClassName.get(Class::class.java),
             WildcardTypeName.subtypeOf(
                 ClassName.get(
-                    elementUtils?.getTypeElement("com.hudson.hrouter_api.GroupPathRepository")
+                    elementUtils?.getTypeElement(
+                        "com.hudson.hrouter_api.repository.entry.GroupPathRepository")
                 )
             )
         )
@@ -217,7 +219,8 @@ class RepositoryFileGenerator(
             TypeSpec.classBuilder(finalClassName)
                 .addSuperinterface(
                     ClassName.get(
-                        elementUtils?.getTypeElement("com.hudson.hrouter_api.ComponentGroupRepository")
+                        elementUtils?.getTypeElement(
+                            "com.hudson.hrouter_api.repository.entry.ComponentGroupRepository")
                     )
                 )
                 .addModifiers(Modifier.PUBLIC)

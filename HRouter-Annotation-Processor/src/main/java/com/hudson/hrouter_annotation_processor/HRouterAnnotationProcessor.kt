@@ -156,6 +156,10 @@ class HRouterAnnotationProcessor: AbstractProcessor() {
             // 没有配置group信息
             route.group = groupNameFromPath
         }else{
+            if(group.contains("/")){
+                messager?.printMessage(Diagnostic.Kind.WARNING,
+                    "${route.pageElement?.asType()} group不能包含/等符号,  group=$group, 组件：$componentName")
+            }
             // 有配置group信息
             if(groupNameFromPath != group){
                 messager?.printMessage(Diagnostic.Kind.WARNING,

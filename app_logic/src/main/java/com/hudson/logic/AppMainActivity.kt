@@ -8,7 +8,7 @@ import com.hudson.hrouter.annotation.HRouter
 import com.hudson.hrouter.annotation.Parameter
 import com.hudson.hrouter_api.param.ParameterInjectorManager
 
-@HRouter(path = "/logic/main", group = "/logic")
+@HRouter(path = "/logic/main", group = "logic")
 class AppMainActivity : AppCompatActivity() {
 
     @Parameter

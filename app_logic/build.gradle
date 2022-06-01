@@ -27,7 +27,7 @@ android {
         javaCompileOptions {
             annotationProcessorOptions{
                 arguments = [
-                    HRouterGroup: project.name,// 路由分组直接指定为模块名。 注意不要直接使用name，会被覆盖为main，要引用project.name
+                    ModuleName: project.name,// 路由分组直接指定为模块名。 注意不要直接使用name，会被覆盖为main，要引用project.name
                     RouterPkg: hroute_info.packageName // 路由代码生成的包名
                 ]
             }
@@ -77,6 +77,8 @@ dependencies {
 //    implementation 'androidx.appcompat:appcompat:1.3.0'
 //    implementation 'com.google.android.material:material:1.4.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
+    implementation 'androidx.appcompat:appcompat:1.3.0'
+    implementation 'com.google.android.material:material:1.4.0'
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
