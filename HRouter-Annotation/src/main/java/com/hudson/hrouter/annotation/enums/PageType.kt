@@ -1,4 +1,4 @@
-package com.hudson.hrouter.annotation.enum
+package com.hudson.hrouter.annotation.enums
 
 /**
  * 页面类型

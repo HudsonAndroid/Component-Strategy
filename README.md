@@ -28,7 +28,7 @@
 借助于Gradle的sourceSets和android的application和library特性来实现这一点。
 
 #### 1）控制组件和应用的特性来回切换
-继续在[公共Gradle配置文件](basic_gradle_config.gradle)中新增是否集成的标记flag，通过该标记控制是组件还是应用。  
+在[公共Gradle配置文件](basic_gradle_config.gradle)中新增是否集成的标记flag，通过该标记控制是组件还是应用。  
 
 **注：为了考虑到组件自身的独立控制性，可以考虑将标记下沉给组件开发方控制，此处为了多个模块统一控制，使用公共Gradle配置文件。**
 
@@ -180,9 +180,9 @@
 
 注意：
 
-- 1.需要依赖HRouter注解module
+- 1.注解处理器module需要依赖HRouter注解module
 - 2.kotlin中要使用auto-service的话要借助kapt，而不是annotation-processor
-- 3.注解处理器一旦make project一次之后，后面make project不会触发逻辑处理，需要先build clean之后重新make project
+- 3.注解处理器一旦make project一次之后，后面make project不会触发处理器的逻辑处理，需要先build clean之后重新make project
 
 #### 3）依赖关系梳理
 注解HRouter可能在各个业务组件的各个页面都要使用，因此将HRouter注解的依赖通过api方式放入**基础功能组件common**中；
@@ -210,8 +210,43 @@
 
 ![给注解处理器传递参数2](resources/给注解处理器传递参数2.jpg)
 
+### 2.3 路由表的维护
+在ARouter中维护了多张路由映射关系表，并在初始化阶段会加载ARouter指定APT的生成包名下遍历查找所有的生成类，参见ARouter的[LogisticsCenter](https://github.com/alibaba/ARouter/blob/develop/arouter-api/src/main/java/com/alibaba/android/arouter/core/LogisticsCenter.java)的init方法。
 
-### 2.3 路由参数管理
+ARouter中分为group和实际的path，一般情况下group可以不用设置。
+
+一个组件中可能存在多个group，因此ARouter对应于每一个组件都会生成一个Group的集合类（不是Collection类型，而是指承载了一个group集合的类），这个类的类名有组件名参与组成文件名规则，因此ARouter需要在Gradle中配置注解处理器的传递参数
+
+	android {
+	    defaultConfig {
+	        ...
+	        javaCompileOptions {
+	            annotationProcessorOptions {
+	                arguments = [AROUTER_MODULE_NAME: project.getName()] // 传递组件名
+	            }
+	        }
+	    }
+	}
+
+另外还需要生成一张每个group中配置的路由集合表的类，这个类的文件名规则需要group参与。
+
+尽管如此，可能**存在的冲突问题**是，假设A组件声明了路由group为 order； B组件声明的路由group也为 order，那么生成的最终文件由于只有group参与文件名规则，因此必然存在冲突，这个是需要注意的地方。 （可以参考[这篇文章](https://juejin.cn/post/6844903731599769608)）
+
+#### 2.3.1 组件路由组表的维护
+为了更好地管理当前组件中不同的路由组group，因此可以将组件中不同group的路由集合归纳到一个集合中，通过group名可以在该集合中找到对应的group中所有路由的集合，整体关系大致如下：
+
+![路由表结构图](resources/路由表结构图.png)
+
+前面提到，为了避免各个组件的组件路由Group文件名冲突，因此加入组件名参与文件名的规则。
+
+但是考虑到运行期间，应用程序无法知晓所配置的路由具体属于哪个组件（所以建议上路由group与组件名存在一定关系），因此需要在初始化阶段加载所有组件各自对应的组件路由Group表，合并路由Group表，如果有相同group的归纳为同一个。
+
+**性能问题的考量:**
+
+一个组件对应了一个组件路由Group表类，需要经过反射来实例化这个类（性能损耗点1）；另外运行期间无法知晓路由组group与路由Group表类的关系，因此必须初始化阶段就将所有路由Group表类初始化，如果组件化工程中组件数量繁多的话，可能需要耗费比较大的时间去处理（性能损耗点2，即没法做到按需加载，懒加载，因为**无法通过group知道具体该实例化哪个组件路由Group表**）。
+
+另外，为了确保只加载组件路由Group表类，而忽略其他类（例如Group与Path映射表），组件路由Group表类的类名需要按照一定的规则前缀来确保正确识别。（其他类应该确保类名规则出现该规则，此逻辑与[ARouter的表初始化]((https://github.com/alibaba/ARouter/blob/develop/arouter-api/src/main/java/com/alibaba/android/arouter/core/LogisticsCenter.java))类似）
+### 2.4 路由参数管理
 路由过程免不了需要传递参数信息，因此需要一套路由参数管理机制。
 
 我们设想的路由发起端是这样的：
@@ -252,7 +287,7 @@
 
 **注：kotlin中定义变量后，默认是public的，但本质是携带有getter和setter的变量，如果在java中访问kotlin的该变量是不能直接通过参数获取的，否则将会报如下错误：**
 
-	// 被注入的类
+	// 被注入的类(kotlin)
 	@HRouter(path = "/logic/main", group = "/logic")
 	class AppMainActivity : AppCompatActivity() {
 	
@@ -260,7 +295,7 @@
 	    var greet: String? = null
 	}
 
-	// 注入器
+	// 注入器(java)
 	public class AppMainActivity_ParameterInjector implements ParameterInjector {
 	  @Override
 	  public void inject(Object targetObject) {
@@ -280,6 +315,8 @@
 - 1.参考[Hilt依赖注入框架](https://developer.android.com/training/dependency-injection/hilt-android#android-classes)的方式，将变量设置为lateinit var
 - 2. 给字段增加 @JvmField 注解，这样就能在java中直接访问
 - 3.类注入器采用kotlin实现，即利用[KotlinPoet](https://github.com/square/kotlinpoet)完成
+
+这个问题在[ARouter官方](https://github.com/alibaba/ARouter/blob/master/README_CN.md)也有提及
 #### 2) 注入器的统一管理
 与Hilt/Dagger类似，注入器需要通过统一的管理，相当于维护一个**注入器存储中心**。
 
@@ -291,6 +328,16 @@
 
 因此注入器的管理中心可以设计成一个key-value的map存储中心。 另外考虑到App页面较多情况下，可能没必要缓存过多层级可以将map结构设计为LruCache缓存。
 
+#### 3）更多思考
+添加了路由参数注入器管理者后，**我们只需要在注入的页面合适的位置手动调用inject方法即可完成路由参数的传递。**
+
+但是这个操作过程基本也是固定的模板代码，因此可以把这段逻辑自动化。 
+
+要解决的问题是**在现有页面代码上初始化位置自动附加上注入逻辑**，可以考虑的方案有：
+
+- 1.如果只是Activity路由跳转，通过Application.registerActivityLifecycleCallbacks注册监听所有Activity的生命周期，在onCreate方法中直接注入。（或者类似可以监听到页面生命周期的处理方案）
+- 2.为了避免破坏代码编写者的逻辑，通过ASM操纵字节码修改对应初始化方法的代码，覆盖原有class文件的方案
+
 
 ## 参考文档
 1. [工程-study_module](https://github.com/zouchanglin/study_module)
@@ -298,3 +345,7 @@
 3. [Android官方-配置 build 变体 ](https://developer.android.com/studio/build/build-variants#sourcesets)
 4. [Gradle官方-配置sourceSets](https://docs.gradle.org/current/userguide/building_java_projects.html#sec:custom_java_source_set_paths)
 5. [Android官方-使用Hilt实现依赖注入](https://developer.android.com/training/dependency-injection/hilt-android#android-classes)
+6. [ARouter-动手撸一个ARouter (ARouter源码分析)](https://juejin.cn/post/6844903731599769608)
+7. [ARouter-【Android进阶】 这次我把ARouter源码搞清楚啦！](https://juejin.cn/post/6981263258015498248)
+8. [ARouter-ARouter源码浅析](https://juejin.cn/post/6844903517925146638)
+9. [ARouter-（4.2.40）阿里开源路由框架ARouter的源码分析](https://blog.csdn.net/fei20121106/article/details/73743235)

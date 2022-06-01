@@ -1,6 +1,6 @@
 package com.hudson.hrouter_annotation_processor.utils
 
-import com.hudson.hrouter.annotation.enum.PageType
+import com.hudson.hrouter.annotation.enums.PageType
 import javax.lang.model.element.Element
 import javax.lang.model.util.Elements
 import javax.lang.model.util.Types
