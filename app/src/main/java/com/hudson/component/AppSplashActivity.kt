@@ -2,11 +2,8 @@ package com.hudson.component
 
 import android.annotation.SuppressLint
 import android.app.Activity
-import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import com.hudson.hrouter_api.HRouter
-import com.hudson.logic.AppMainActivity
 import java.util.*
 
 @SuppressLint("CustomSplashScreen")

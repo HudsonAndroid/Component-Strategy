@@ -43,7 +43,4 @@ dependencies {
 
     // 依赖路由组件
     implementation project(":HRouter-Api")
-
-    // 依赖基础功能组件
-    implementation project(":common")
 }
