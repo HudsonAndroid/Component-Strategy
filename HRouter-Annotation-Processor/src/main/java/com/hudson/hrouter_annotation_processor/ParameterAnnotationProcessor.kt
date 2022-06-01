@@ -1,7 +1,6 @@
 package com.hudson.hrouter_annotation_processor
 
 import com.google.auto.service.AutoService
-import com.hudson.hrouter.annotation.HRouter
 import com.hudson.hrouter.annotation.Parameter
 import com.hudson.hrouter_annotation_processor.param.DIMethod
 import com.hudson.hrouter_annotation_processor.utils.isValidRoutePageType

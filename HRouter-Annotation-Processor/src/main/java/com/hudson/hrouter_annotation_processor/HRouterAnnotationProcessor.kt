@@ -1,7 +1,7 @@
 package com.hudson.hrouter_annotation_processor
 
 import com.google.auto.service.AutoService
-import com.hudson.hrouter.annotation.HRouter
+import com.hudson.hrouter.annotation.HRoute
 import com.hudson.hrouter.annotation.bean.RouteInfo
 import com.hudson.hrouter.annotation.enums.PageType
 import com.hudson.hrouter_annotation_processor.HRouterAnnotationProcessor.Companion.KEY_GEN_ROUTER_PKG
@@ -22,7 +22,7 @@ import javax.tools.Diagnostic
  * HRouter的注解处理器
  */
 @AutoService(Processor::class) // 帮助我们注册注解处理器
-@SupportedAnnotationTypes("com.hudson.hrouter.annotation.HRouter") // 需要处理的注解类
+@SupportedAnnotationTypes("com.hudson.hrouter.annotation.HRoute") // 需要处理的注解类
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 @SupportedOptions(
     KEY_GEN_ROUTER_PKG,
@@ -90,10 +90,10 @@ class HRouterAnnotationProcessor: AbstractProcessor() {
             return false
         }
         // 拿到所有被HRouter注解的类信息
-        val elements = roundEnv?.getElementsAnnotatedWith(HRouter::class.java) ?: emptySet()
+        val elements = roundEnv?.getElementsAnnotatedWith(HRoute::class.java) ?: emptySet()
         for(element in elements){
             // 拿到注解，从注解中解析参数
-            val routerAnnotation = element.getAnnotation(HRouter::class.java)
+            val routerAnnotation = element.getAnnotation(HRoute::class.java)
 
             createRouteInfoByAnnotation(element, routerAnnotation)?.let {
                 val routeList = allRoutes[it.group] ?: mutableListOf()
@@ -117,18 +117,18 @@ class HRouterAnnotationProcessor: AbstractProcessor() {
     /**
      * 通过注解解析路由信息
      */
-    private fun createRouteInfoByAnnotation(element: Element, routerAnnotation: HRouter): RouteInfo? {
+    private fun createRouteInfoByAnnotation(element: Element, routeAnnotation: HRoute): RouteInfo? {
         // 获取到被注解的类的信息
         val matchedPageType: PageType? = element.isValidRoutePageType(typeUtils, elementsUtils)
         if(matchedPageType == null){
             messager?.printMessage(Diagnostic.Kind.WARNING,
-                "HRouter注解的页面类型没有可匹配的路由类型，type:${element.asType()}, path=${routerAnnotation.path}, group=${routerAnnotation.group}")
+                "HRoute注解的页面类型没有可匹配的路由类型，type:${element.asType()}, path=${routeAnnotation.path}, group=${routeAnnotation.group}")
             return null
         }
         val routeInfo = RouteInfo(
             matchedPageType,
-            routerAnnotation.path,
-            routerAnnotation.group
+            routeAnnotation.path,
+            routeAnnotation.group
         ).apply {
             pageElement = element as TypeElement
         }
