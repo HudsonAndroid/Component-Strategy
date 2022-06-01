@@ -29,6 +29,11 @@ object HRouter {
         }.start()
     }
 
+    /**
+     * 指定path，预跳转路由
+     *
+     * group将自动从path中解析。这对于group完全匹配path头部域的非常有效。
+     */
     fun build(path: String): BundleManager{
         checkPathValid(path)
 
@@ -46,7 +51,11 @@ object HRouter {
         }
     }
 
-
+    /**
+     * 明确指定path和group，预跳转路由
+     *
+     * group可能与path头部域不同（虽然不建议这样设置）
+     */
     fun build(path: String, group: String): BundleManager {
         checkPathValid(path)
         require(group.isNotEmpty() && !group.contains("/")){
