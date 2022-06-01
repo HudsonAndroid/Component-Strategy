@@ -161,18 +161,18 @@
 一般情况会借助[JavaPoet](https://github.com/square/javapoet)来完成java文件的动态生成。
 
 ### 2.2 自定义注解和注解处理器
-#### 1)新建自定义注解[HRouter](HRouter-Annotation)
+#### 1)新建自定义注解[HRoute](HRouter-Annotation/src/main/java/com/hudson/hrouter/annotation/HRoute.kt)
 
 	@Target(AnnotationTarget.CLASS) // 作用在类上
 	@Retention(AnnotationRetention.SOURCE) // 编译期生效
-	annotation class HRouter(
+	annotation class HRoute(
 	    val path: String,
 	    val group: String = "" // 一般指定为组件名
 	)
 #### 2）新建自定义注解处理器[HRouter-Annotation-Processor](HRouter-Annotation-Processor)
 
 	@AutoService(Processor::class)
-	@SupportedAnnotationTypes("com.hudson.hrouter.annotation.HRouter") // 需要处理的注解类
+	@SupportedAnnotationTypes("com.hudson.hrouter.annotation.HRoute") // 需要处理的注解类
 	@SupportedSourceVersion(SourceVersion.RELEASE_8)
 	class HRouterAnnotationProcessor: AbstractProcessor() {
 		// ...
@@ -185,7 +185,7 @@
 - 3.注解处理器一旦make project一次之后，后面make project不会触发处理器的逻辑处理，需要先build clean之后重新make project
 
 #### 3）依赖关系梳理
-注解HRouter可能在各个业务组件的各个页面都要使用，因此将HRouter注解的依赖通过api方式放入**基础功能组件common**中；
+注解HRoute可能在各个业务组件的各个页面都要使用，因此将HRouter注解的依赖通过api方式放入**基础功能组件common**中；
 
 而注解处理器由于kapt或者annotationProcessor只对当前module有效且不向上传递依赖，因此注解处理器需要在各个需要配置路由的业务组件上增加依赖。
 
@@ -386,6 +386,15 @@ ARouter中分为group和实际的path，一般情况下group可以不用设置�
 比如实例代码logic的[页面AppMainActivity](app_logic/src/main/java/com/hudson/logic/AppMainActivity.kt)实现了跳转到没有任何关联的Product组件页面中去。
 
 ## 3.总结
+壳工程负责统筹所有业务组件，以及启动页、相关的公共初始化等功能； 业务组件各自专职负责自身擅长的业务功能； 基础组件负责提供公共的基础功能实现; 路由框架贯穿各个业务组件的沟通桥梁。
+
+![总结](resources/总结.png)
+
+组件化方案，在确保应用和组件快速切换，保证独立测试验证的前提下，使得各个业务组件之间的耦合关系彻底断开，各个业务组件的共同宣言：
+
+**我们各自独立，但又通过Router框架保持沟通，共同扛起了APP的功能大旗。**
+
+![Good Brother](resources/好兄弟一起抗.jpg)
 
 ## 参考文档
 1. [工程-study_module](https://github.com/zouchanglin/study_module)
