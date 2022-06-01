@@ -14,7 +14,6 @@ import java.util.*
 class AppSplashActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        HRouter.initAsync(this)
         Timer().schedule(object : TimerTask(){
             override fun run() {
                 launchMainLogicPage()

@@ -334,15 +334,48 @@ ARouter中分为group和实际的path，一般情况下group可以不用设置�
 
 因此注入器的管理中心可以设计成一个key-value的map存储中心。 另外考虑到App页面较多情况下，可能没必要缓存过多层级可以将map结构设计为LruCache缓存。
 
-#### 3）更多思考
+#### 3）自动完成依赖注入
 添加了路由参数注入器管理者后，**我们只需要在注入的页面合适的位置手动调用inject方法即可完成路由参数的传递。**
 
 但是这个操作过程基本也是固定的模板代码，因此可以把这段逻辑自动化。 
 
 要解决的问题是**在现有页面代码上初始化位置自动附加上注入逻辑**，可以考虑的方案有：
 
-- 1.如果只是Activity路由跳转，通过Application.registerActivityLifecycleCallbacks注册监听所有Activity的生命周期，在onCreate方法中直接注入。（或者类似可以监听到页面生命周期的处理方案）
-- 2.为了避免破坏代码编写者的逻辑，通过ASM操纵字节码修改对应初始化方法的代码，覆盖原有class文件的方案
+- 1.**如果只是Activity路由跳转，通过Application.registerActivityLifecycleCallbacks注册监听所有Activity的生命周期，在onCreate方法中直接注入。**（或者类似可以监听到页面生命周期的处理方案）
+
+壳app自动帮助完成注入[ShellApplication.kt](app/src/main/java/com/hudson/component/ShellApplication.kt)
+
+	class ShellApplication: Application() {
+	
+	    override fun onCreate() {
+	        super.onCreate()
+	        HRouter.initAsync(this)
+	
+	        autoInjectActivityPage()
+	    }
+	
+	    private fun autoInjectActivityPage(){
+	        registerActivityLifecycleCallbacks(object : ActivityLifecycleCallbacks{
+	            // ....
+	
+	            override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
+	                injectActivity(activity)
+	            }
+	        })
+	    }
+	
+	    private fun injectActivity(activity: Activity){
+	        try{
+	            ParameterInjectorManager.inject(activity)
+	        }catch (e: Exception){
+	            // e.printStackTrace() ignore, 对于那些没有注册路由的页面
+	        }
+	    }
+	}
+
+注：上面忽略了异常情况，可以不忽略，通过Activity上配置的路由注解来过滤出可以注入的Activity。 但是由于HRoute注解仅在编译期生效，因此需要要修改下HRoute注解的生效期。
+
+- 2.**为了避免破坏代码编写者的逻辑，通过ASM操纵字节码修改对应初始化方法的代码，覆盖原有class文件的方案**
 
 ### 2.5 路由功能的测试验证
 我们要达到的目的是，不直接引用任何其他组件的类，而跳转到对应组件的页面中去。 经过路由组件后，我们达到了如下效果：
@@ -350,8 +383,9 @@ ARouter中分为group和实际的path，一般情况下group可以不用设置�
 - **1）App壳依赖了其他业务组件，但仅停留在dependencies引入的层面，没有任何其他的耦合关联。**
 - **2）除了App壳之外的其他业务组件之间没有任何的直接关联，即使是dependencies也没有，但依然可以实现页面跳转。**
 
-比如实例代码logic的[页面AppMainActivity](app_logic/src/main/java/com/hudson/logic/AppMainActivity.kt)实现了跳转到没有任何关系的Product组件页面中去。
+比如实例代码logic的[页面AppMainActivity](app_logic/src/main/java/com/hudson/logic/AppMainActivity.kt)实现了跳转到没有任何关联的Product组件页面中去。
 
+## 3.总结
 
 ## 参考文档
 1. [工程-study_module](https://github.com/zouchanglin/study_module)
