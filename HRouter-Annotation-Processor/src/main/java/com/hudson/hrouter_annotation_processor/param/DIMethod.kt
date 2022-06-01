@@ -101,19 +101,19 @@ class DIMethod private constructor(builder: DIMethod.Builder){
         return when{
             (kind == TypeKind.INT ||
                     mirrorTypeClazz.equals("java.lang.Integer", ignoreCase = true)) ->
-                "getIntExtra(\"$paramName\", $defaultValue)"
+                "getIntExtra(\"$paramName\", ($defaultValue == null ? -1 : $defaultValue))"
 
             (kind == TypeKind.BOOLEAN ||
                     mirrorTypeClazz.equals("java.lang.Boolean", ignoreCase = true)) ->
-                "getBooleanExtra(\"$paramName\", $defaultValue)"
+                "getBooleanExtra(\"$paramName\", ($defaultValue == null ? false : $defaultValue))"
 
             (kind == TypeKind.FLOAT ||
                     mirrorTypeClazz.equals("java.lang.Float", ignoreCase = true)) ->
-                "getFloatExtra(\"$paramName\", $defaultValue)"
+                "getFloatExtra(\"$paramName\", ($defaultValue == null ? -1f : $defaultValue))"
 
             (kind == TypeKind.DOUBLE ||
                     mirrorTypeClazz.equals("java.lang.Double", ignoreCase = true)) ->
-                "getDoubleExtra(\"$paramName\", $defaultValue)"
+                "getDoubleExtra(\"$paramName\", ($defaultValue == null ? -1.0 : $defaultValue)"
             else -> null
         }
     }
