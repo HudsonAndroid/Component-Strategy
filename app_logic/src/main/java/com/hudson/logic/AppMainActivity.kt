@@ -4,11 +4,13 @@ import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Button
-import com.hudson.hrouter.annotation.HRouter
+import android.widget.TextView
+import com.hudson.hrouter.annotation.HRoute
 import com.hudson.hrouter.annotation.Parameter
+import com.hudson.hrouter_api.HRouter
 import com.hudson.hrouter_api.param.ParameterInjectorManager
 
-@HRouter(path = "/logic/main", group = "logic")
+@HRoute(path = "/logic/main", group = "logic")
 class AppMainActivity : AppCompatActivity() {
 
     @Parameter
@@ -23,9 +25,9 @@ class AppMainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-
-
         ParameterInjectorManager.inject(this)
+
+        findViewById<TextView>(R.id.tv_greet).text = greet
 
         guiTestEntry()
 
@@ -40,6 +42,17 @@ class AppMainActivity : AppCompatActivity() {
             }
         }catch (e: ClassNotFoundException){
             e.printStackTrace()
+            btn.setOnClickListener {
+                jumpOtherNonRelatedComponentPage()
+            }
         }
+    }
+
+    /**
+     * 跳转到没有依赖关系的其他组件的页面
+     */
+    private fun jumpOtherNonRelatedComponentPage(){
+        HRouter.build("/product/main")
+            .navigation(this)
     }
 }

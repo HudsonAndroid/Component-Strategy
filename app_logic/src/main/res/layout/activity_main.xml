@@ -6,6 +6,17 @@
     android:layout_height="match_parent"
     tools:context=".AppMainActivity">
 
+    <TextView
+        android:id="@+id/tv_greet"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="Hello"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:textSize="30sp"
+        app:layout_constraintBottom_toTopOf="@id/btn_center"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
     <Button
         android:id="@+id/btn_center"
         android:layout_width="wrap_content"

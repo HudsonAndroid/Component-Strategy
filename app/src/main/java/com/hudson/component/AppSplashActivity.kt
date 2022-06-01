@@ -5,6 +5,7 @@ import android.app.Activity
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import com.hudson.hrouter_api.HRouter
 import com.hudson.logic.AppMainActivity
 import java.util.*
 
@@ -13,6 +14,7 @@ import java.util.*
 class AppSplashActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        HRouter.initAsync(this)
         Timer().schedule(object : TimerTask(){
             override fun run() {
                 launchMainLogicPage()
@@ -20,9 +22,12 @@ class AppSplashActivity : Activity() {
         }, 500)
     }
 
-    // todo 不能直接依赖其他业务组件的类
     fun launchMainLogicPage(){
         finish()
-        startActivity( Intent(this, AppMainActivity::class.java))
+        // 跳转到App主业务逻辑页面
+        HRouter.build("/logic/main")
+            .withString("greet", "来自壳的问候")
+            .withInt("count", 666)
+            .navigation(this)
     }
 }

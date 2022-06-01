@@ -246,6 +246,12 @@ ARouter中分为group和实际的path，一般情况下group可以不用设置�
 一个组件对应了一个组件路由Group表类，需要经过反射来实例化这个类（性能损耗点1）；另外运行期间无法知晓路由组group与路由Group表类的关系，因此必须初始化阶段就将所有路由Group表类初始化，如果组件化工程中组件数量繁多的话，可能需要耗费比较大的时间去处理（性能损耗点2，即没法做到按需加载，懒加载，因为**无法通过group知道具体该实例化哪个组件路由Group表**）。
 
 另外，为了确保只加载组件路由Group表类，而忽略其他类（例如Group与Path映射表），组件路由Group表类的类名需要按照一定的规则前缀来确保正确识别。（其他类应该确保类名规则出现该规则，此逻辑与[ARouter的表初始化]((https://github.com/alibaba/ARouter/blob/develop/arouter-api/src/main/java/com/alibaba/android/arouter/core/LogisticsCenter.java))类似）
+
+运行阶段路由组件直接在生成类的包下查找所有组件路由Group表的类，并加载到内存中。（过程涉及对指定包的类查找，可以参考[ARouter中的实现](https://github.com/alibaba/ARouter/blob/develop/arouter-api/src/main/java/com/alibaba/android/arouter/utils/ClassUtils.java)）
+
+#### 2.3.2 Group-Route子表的管理
+相比之下，Group-Route子表的管理就简单得多，因为每一个group都将对应生成一个维护了该组group路由集合的类，而类名除了固定模板仅与group名关联。（正因为如此，不同组件不能设置相同的group，否则将会创建同包同名的类）
+
 ### 2.4 路由参数管理
 路由过程免不了需要传递参数信息，因此需要一套路由参数管理机制。
 
@@ -337,6 +343,14 @@ ARouter中分为group和实际的path，一般情况下group可以不用设置�
 
 - 1.如果只是Activity路由跳转，通过Application.registerActivityLifecycleCallbacks注册监听所有Activity的生命周期，在onCreate方法中直接注入。（或者类似可以监听到页面生命周期的处理方案）
 - 2.为了避免破坏代码编写者的逻辑，通过ASM操纵字节码修改对应初始化方法的代码，覆盖原有class文件的方案
+
+### 2.5 路由功能的测试验证
+我们要达到的目的是，不直接引用任何其他组件的类，而跳转到对应组件的页面中去。 经过路由组件后，我们达到了如下效果：
+
+- **1）App壳依赖了其他业务组件，但仅停留在dependencies引入的层面，没有任何其他的耦合关联。**
+- **2）除了App壳之外的其他业务组件之间没有任何的直接关联，即使是dependencies也没有，但依然可以实现页面跳转。**
+
+比如实例代码logic的[页面AppMainActivity](app_logic/src/main/java/com/hudson/logic/AppMainActivity.kt)实现了跳转到没有任何关系的Product组件页面中去。
 
 
 ## 参考文档

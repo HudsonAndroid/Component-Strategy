@@ -1,6 +1,7 @@
 
 plugins {
     id 'org.jetbrains.kotlin.android'
+    id 'kotlin-kapt'
 }
 
 // 必须按照旧版Gradle的方式
@@ -23,6 +24,16 @@ android {
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        // 给内部的注解处理器传递参数
+        javaCompileOptions {
+            annotationProcessorOptions{
+                arguments = [
+                        ModuleName: project.name,// 路由分组直接指定为模块名。 注意不要直接使用name，会被覆盖为main，要引用project.name
+                        RouterPkg: hroute_info.packageName // 路由代码生成的包名
+                ]
+            }
+        }
     }
 
     buildTypes {
@@ -59,6 +70,10 @@ dependencies {
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
+
+    // 依赖路由组件
+    kapt project(":HRouter-Annotation-Processor")
+    implementation project(":HRouter-Api")
 
     // 依赖基础功能组件
     implementation project(":common")
