@@ -19,7 +19,8 @@ class AppSplashActivity : Activity() {
     }
 
     fun launchMainLogicPage(){
-        finish()
+        // todo 切换的时候，由于finish，把默认的任务栈结束了，而打开的页面又要重新启动任务栈，所以切换动画是task的切换动画.
+//        finish()
         // 跳转到App主业务逻辑页面
         HRouter.build("/logic/main")
             .withString("greet", "来自壳的问候")
